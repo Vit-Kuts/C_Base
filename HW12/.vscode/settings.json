@@ -24,7 +24,8 @@
       "ctype.h": "c",
       "temp_api.h": "c",
       "windows.h": "c",
-      "data.h": "c"
+      "data.h": "c",
+      "list.h": "c"
     },
      "clang-format.executable": "clang-format",
   "clang-format.style": "Google",

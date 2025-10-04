@@ -2,6 +2,7 @@
 #include <stdio.h>
 #include <windows.h>
 #include "temp_api.h"
+#include "list.h"
 
 
 int main() {
@@ -10,18 +11,19 @@ int main() {
   setlocale(LC_ALL, "en_US.UTF-8");
 
   sensor_t info[MAX_RECORDS];
+  list_t list;
+  LIST_init(&list);
 
-  int number_of_records = DATA_AddInfo(info);
-  DATA_Print(info, number_of_records);
+  // int number_of_records = DATA_AddInfo(info);
+  
+  // for (int i = 0; i < number_of_records; i++) {
+  //   LIST_add_item_to_end(&list, info[i]);
+  // }
 
-  DATA_SortByTemperature(info, number_of_records);
-  DATA_Print(info, number_of_records);
+  // LIST_print_list(list);
 
-  DATA_SortByDate(info, number_of_records);
-  DATA_Print(info, number_of_records);
-
-  TEMP_API_StatisticsForTheMonth(info, 2025, 1, number_of_records);
-  TEMP_API_StatisticsForTheYear(info, 2025, number_of_records);
+  // TEMP_API_StatisticsForTheMonth(&list, 2025, 1);
+  // TEMP_API_StatisticsForTheYear(&list, 2025);
 
   printf("\nPress enter to exit...");
   getchar();

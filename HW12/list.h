@@ -1,16 +1,15 @@
 #define LIST_H_
 #ifdef LIST_H_
 #include <stdarg.h>
+
 #include "data.h"
 
-typedef struct node_t
-{
+typedef struct node_t {
   struct node_t *next;
   sensor_t data;
 } node_t;
 
-typedef struct list_t
-{
+typedef struct list_t {
   node_t *head;
   node_t *tail;
 } list_t;

@@ -1,5 +1,6 @@
 #ifndef DATA_H_
 #define DATA_H_
+#include <stdbool.h>
 #include <stdint.h>
 
 typedef struct {
@@ -11,20 +12,12 @@ typedef struct {
   float temperature;
 } sensor_t;
 
-#define MAX_RECORDS 30
-
 typedef struct {
-  uint32_t number;
-  sensor_t sensor_info[MAX_RECORDS];
-} data_t;
+  bool h;
+  char *f;
+  long int y;
+  long int m;
+} flag_and_pfram_t;
 
-union sensor_serdes {
-  data_t data;
-  uint8_t bytes[sizeof(data_t)];
-};
-
-int DATA_AddInfo(sensor_t *info);
-void DATA_Print(sensor_t *info, int number);
-void DATA_SortByTemperature(sensor_t *info, int number_of_records);
-void DATA_SortByDate(sensor_t *info, int number_of_records);
+void DATA_FlagAnalysis(int arg, char *argv[]);
 #endif /*DATA_H_*/

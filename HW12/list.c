@@ -5,9 +5,10 @@
 
 #include "data.h"
 
-
+// static function declaration
 static int add_item_to_begin(list_t *list, sensor_t item);
 
+//____________________________________________________________________________
 int LIST_init(list_t *list) {
   list->head = list->tail = NULL;
 
@@ -31,6 +32,7 @@ static int add_item_to_begin(list_t *list, sensor_t item) {
   return 0;
 }
 
+//____________________________________________________________________________
 int LIST_add_item_to_end(list_t *list, sensor_t item) {
   if (list == NULL) return -1;
 
@@ -48,6 +50,7 @@ int LIST_add_item_to_end(list_t *list, sensor_t item) {
   return 0;
 }
 
+//____________________________________________________________________________
 void LIST_print_list(list_t list) {
   node_t *current = list.head;
 

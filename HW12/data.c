@@ -1,91 +1,180 @@
 #include "data.h"
+
+#include <math.h>
+#include <stdbool.h>
 #include <stdio.h>
+#include <stdlib.h>
+#include <unistd.h>
+
+#include "list.h"
+#include "temp_api.h"
 
 // static function declaration
-static void AddRecord(sensor_t *info, uint32_t number, uint16_t year,
-                      uint8_t month, uint8_t day, uint8_t hour, uint8_t minute,
-                      float temperature);
-static void Swap(sensor_t *info, int i, int j);
-static int Compare(const void *arg1, const void *arg2);
-// static uint64_t DataAndTimeToInt(sensor_t *info);
+static void FlagHandler(flag_and_pfram_t *temp);
+static void PrintHelpMessage(void);
+static int ParseFile(char *file_name, list_t *list);
+
 //____________________________________________________________________________
+void DATA_FlagAnalysis(int arg, char *argv[]) {
+  int rez = 0;
+  flag_and_pfram_t temp;
 
-int DATA_AddInfo(sensor_t *info) {
-  int number_of_records = 0;
-  AddRecord(info, number_of_records++, 2021, 1, 1, 12, 10, -40);
-  AddRecord(info, number_of_records++, 2018, 1, 4, 23, 15, 0);
-  AddRecord(info, number_of_records++, 2025, 1, 10, 0, 30, -30);
-  AddRecord(info, number_of_records++, 2021, 3, 15, 1, 55, 6);
-  AddRecord(info, number_of_records++, 2020, 9, 7, 7, 2, 2);
-  AddRecord(info, number_of_records++, 2025, 1, 14, 17, 7, 23);
-  AddRecord(info, number_of_records++, 2025, 2, 14, 17, 0, -10);
-  return number_of_records;
-}
+  temp.h = false;
+  temp.f = NULL;
+  temp.y = 0;
+  temp.m = 0;
 
-static void AddRecord(sensor_t *info, uint32_t number, uint16_t year,
-                      uint8_t month, uint8_t day, uint8_t hour, uint8_t minute,
-                      float temperature) {
-  info[number].year = year;
-  info[number].month = month;
-  info[number].day = day;
-  info[number].hour = hour;
-  info[number].minute = minute;
-  info[number].temperature = temperature;
-}
+  if (arg == 1) {
+    temp.h = true;
+  }
 
-void DATA_Print(sensor_t *info, int number) {
-  for (int i = 0; i < number; i++) {
-    printf("%04d-%02d-%02d %1.2d:%1.2d temperature = %2.f°C\n", info[i].year,
-           info[i].month, info[i].day, info[i].hour, info[i].minute,
-           info[i].temperature);
-  };
-}
-
-void DATA_SortByTemperature(sensor_t *info, int number_of_records) {
-  printf(
-      "======================================================\nSorted by "
-      "temperature:\n");
-  for (int i = 0; i < number_of_records; i++) {
-    for (int j = i; j < number_of_records; j++) {
-      if (info[i].temperature >= info[j].temperature) {
-        Swap(info, i, j);
-      }
+  while ((rez = getopt(arg, argv, "hf:y:m:")) != -1) {
+    switch (rez) {
+      case 'h':
+        temp.h = true;
+        break;
+      case 'f':
+        temp.f = optarg;
+        break;
+      case 'y':
+        temp.y = strtol(optarg, NULL, 10);
+        break;
+      case 'm':
+        temp.m = strtol(optarg, NULL, 10);
+        break;
     }
+  }
+  FlagHandler(&temp);
+}
+
+//____________________________________________________________________________
+static void FlagHandler(flag_and_pfram_t *temp) {
+  if (temp->h && temp->f == 0) {
+    PrintHelpMessage();
+    return;
+  } else if (temp->h) {
+    PrintHelpMessage();
+  }
+
+  list_t list;
+  LIST_init(&list);
+
+  if (ParseFile(temp->f, &list) == 0) {
+    if (temp->y && temp->m) {
+      TEMP_API_StatisticsForTheMonth(&list, temp->y, temp->m);
+    } else if (temp->y && temp->m == 0) {
+      TEMP_API_StatisticsForTheYear(&list, temp->y);
+    } else if (temp->y == 0 && temp->m) {
+      printf("========================ERROR!========================\n");
+      printf("year not entered\n");
+      printf("======================================================\n");
+      printf("\n");
+      return;
+    }
+  } else {
+    printf("=======================WARNING!=======================\n");
+    printf("%s could not find the input file\n", temp->f);
+    printf("======================================================\n");
+    printf("\n");
+    return;
   }
 }
 
-static void Swap(sensor_t *info, int i, int j) {
-  sensor_t temp = info[i];
-  info[i] = info[j];
-  info[j] = temp;
-}
-
-void DATA_SortByDate(sensor_t *info, int number_of_records) {
+//____________________________________________________________________________
+static void PrintHelpMessage(void) {
   printf(
-      "======================================================\nSorted by "
-      "date:\n");
-  for (int i = 0; i < number_of_records; i++) {
-    for (int j = i; j < number_of_records; j++) {
-      if (Compare(info + i, info + j) > 0) {
-        Swap(info, i, j);
+      "===================================================HELP================="
+      "==================================\n");
+  printf("%-10s%s\n", "-h",
+         "Obtaining information about possible launch keys with a");
+  printf("%-10s%s\n", "", "brief description of their purpose;");
+  printf("%-10s%s\n", "-f <arg>",
+         "Specifying the file to be processed, where <arg> is the file name.");
+  printf("%-10s%s\n", "",
+         "If the \"-m\" option is not added in this mode, only statistics");
+  printf("%-10s%s\n", "", "for the entire file will be displayed;");
+  printf("%-10s%s\n", "-y <arg>",
+         "Output temperature information for the specified year.");
+  printf("%-10s%s\n", "", "Where <arg> is the year number;");
+  printf("%-10s%s\n", "-m <arg>",
+         "Output temperature information for the specified month.");
+  printf("%-10s%s\n", "",
+         "Where <arg> is the month number. Only used in conjunction");
+  printf("%-10s%s\n", "", "with the \"-y\" switch;");
+  printf(
+      "========================================================================"
+      "==================================\n");
+  printf("\n");
+}
+//____________________________________________________________________________
+static int ParseFile(char *file_name, list_t *list) {
+  FILE *file = fopen(file_name, "r");
+  if (file == NULL) {
+    printf("========================ERROR!========================\n");
+    printf("Failed to open %s file!\n", file_name);
+    printf("======================================================\n");
+    printf("\n");
+    return 1;
+  }
+
+  printf("=======================SUCCESS!=======================\n");
+  printf("%s file is open successfully!\n", file_name);
+  printf("======================================================\n");
+
+  printf("Processing file...\n");
+
+  char line[256];
+  int line_number = 0;
+  int error_count = 0;
+  int error_lines[10];
+  char error_contents[10][100];
+
+  while (fgets(line, sizeof(line), file) != NULL) {
+    line_number++;
+
+    line[strcspn(line, "\n")] = '\0';
+
+    int Y, M, D, H, m, T;
+
+    if (sscanf(line, "%d;%d;%d;%d;%d;%d", &Y, &M, &D, &H, &m, &T) == 6) {
+      sensor_t item;
+      item.year = Y;
+      item.month = M;
+      item.day = D;
+      item.hour = H;
+      item.minute = m;
+      item.temperature = T;
+
+      LIST_add_item_to_end(list, item);
+    } else {
+      if (error_count < 10) {
+        error_lines[error_count] = line_number;
+        strncpy(error_contents[error_count], line, 99);
+        error_contents[error_count][99] = '\0';
       }
+      error_count++;
     }
   }
-}
 
-// static uint64_t DataAndTimeToInt(sensor_t *info) {
-//   return (uint64_t)info->year << 32 | (uint64_t)info->month << 24 |
-//          (uint64_t)info->day << 16 | (uint64_t)info->hour << 8 |
-//          (uint64_t)info->minute;
-// }
+  printf("\n=======================COMPLETE!======================\n");
+  printf("File processing completed! Processed %d lines.\n", line_number);
 
-static int Compare(const void *arg1, const void *arg2) {
-  const sensor_t *a = (const sensor_t *)arg1;
-  const sensor_t *b = (const sensor_t *)arg2;
-
-  if (a->year != b->year) return a->year - b->year;
-  if (a->month != b->month) return a->month - b->month;
-  if (a->day != b->day) return a->day - b->day;
-  if (a->hour != b->hour) return a->hour - b->hour;
-  if (a->minute != b->minute) return a->minute - b->minute;
+  if (error_count > 0) {
+    printf("Format errors found: %d\n", error_count);
+    if (error_count <= 10) {
+      printf("Error details:\n");
+      for (int i = 0; i < error_count; i++) {
+        printf("  Line %d: %s\n", error_lines[i], error_contents[i]);
+      }
+    } else {
+      printf("First 10 errors:\n");
+      for (int i = 0; i < 10; i++) {
+        printf("  Line %d: %s\n", error_lines[i], error_contents[i]);
+      }
+      printf("  ... and %d more errors\n", error_count - 10);
+    }
+  }
+  printf("\n");
+  fclose(file);
+  return 0;
 }

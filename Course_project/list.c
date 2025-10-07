@@ -4,7 +4,7 @@
 #include "data.h"
 #include "list.h"
 // static function declaration
-static int add_item_to_begin(list_t *list, sensor_t item);
+static int AddItemToBegin(list_t *list, sensor_t item);
 
 //____________________________________________________________________________
 int LIST_Init(list_t *list) {
@@ -13,7 +13,7 @@ int LIST_Init(list_t *list) {
   return 0;
 }
 
-static int add_item_to_begin(list_t *list, sensor_t item) {
+static int AddItemToBegin(list_t *list, sensor_t item) {
   if (list == NULL) return -1;
 
   node_t *newNode = (node_t *)malloc(sizeof(node_t));
@@ -35,7 +35,7 @@ int LIST_AddItemToEnd(list_t *list, sensor_t item) {
   if (list == NULL) return -1;
 
   if (list->tail == NULL) {
-    return add_item_to_begin(list, item);
+    return AddItemToBegin(list, item);
   }
 
   node_t *newNode = (node_t *)malloc(sizeof(node_t));

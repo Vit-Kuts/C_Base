@@ -60,9 +60,9 @@ static void FlagHandler(flag_and_pfram_t *temp) {
 
   if (ParseFile(temp->f, &list) == 0) {
     if (temp->y && temp->m) {
-      TEMP_API_StatisticsForTheMonth(&list, temp->y, temp->m);
+      TEMP_FUNCTION_StatisticsForTheMonth(&list, temp->y, temp->m);
     } else if (temp->y && temp->m == 0) {
-      TEMP_API_StatisticsForTheYear(&list, temp->y);
+      TEMP_FUNCTION_StatisticsForTheYear(&list, temp->y);
     } else if (temp->y == 0 && temp->m) {
       printf("========================ERROR!========================\n");
       printf("year not entered\n");
@@ -90,7 +90,7 @@ static void PrintHelpMessage(void) {
   printf("%-10s%s\n", "-f <arg>",
          "Specifying the file to be processed, where <arg> is the file name.");
   printf("%-10s%s\n", "",
-         "If the \"-m\" option is not added in this mode, only statistics");
+         "If you run the program with only this switch, only file statistics will be displayed.");
   printf("%-10s%s\n", "", "for the entire file will be displayed;");
   printf("%-10s%s\n", "-y <arg>",
          "Output temperature information for the specified year.");
@@ -99,7 +99,7 @@ static void PrintHelpMessage(void) {
          "Output temperature information for the specified month.");
   printf("%-10s%s\n", "",
          "Where <arg> is the month number. Only used in conjunction");
-  printf("%-10s%s\n", "", "with the \"-y\" switch;");
+  printf("%-10s%s\n", "", "with the \"-y\" switch.");
   printf(
       "========================================================================"
       "==================================\n");

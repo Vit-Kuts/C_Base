@@ -17,4 +17,7 @@ list.o: list.c
 
 clean:
 	del *.o
-	del course_project.exe
+	del *.exe
+
+clean_object:
+	del *.o

@@ -16,7 +16,7 @@ static float MaxTemperatureForTheYear(list_t list, int year_number);
 static bool SearchInList(list_t list, int year_number, int monthly_number);
 
 //____________________________________________________________________________
-void TEMP_API_StatisticsForTheMonth(list_t *list, long int year_number,
+void TEMP_FUNCTION_StatisticsForTheMonth(list_t *list, long int year_number,
                                     long int monthly_number) {
   printf("=========Statistics for the %02d months in %04d=========\n",
          monthly_number, year_number);
@@ -129,7 +129,7 @@ static float MaxTemperatureForTheCurrentMonth(list_t list, int year_number,
 }
 
 //____________________________________________________________________________
-void TEMP_API_StatisticsForTheYear(list_t *list, int year_number) {
+void TEMP_FUNCTION_StatisticsForTheYear(list_t *list, int year_number) {
   printf("=============Statistics for the %04d year=============\n",
          year_number);
 
